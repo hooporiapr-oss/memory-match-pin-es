@@ -73,93 +73,570 @@ body{font-family:Georgia,serif;background:linear-gradient(135deg,#0a0e27,#1a1034
 <div class="top-bar"><a href="https://hooporiapr-oss.github.io/akashic-works/" class="back">Inicio</a><div class="banner" id="bannerEl">3 gratis</div></div>
 <div class="title">Memoria de Parejas</div>
 <div class="subtitle">Puerto Rico</div>
+
 <div class="box" id="loginBox">
 <div class="pin-title">Ingresa tu PIN</div>
-<div class="pin-sub">Escribe tu PIN de 4 digitos</div>
+<div class="pin-sub">Escribe tu PIN de 4 dígitos</div>
 <div class="dots"><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div></div>
 <div class="keypad" id="loginPad"></div>
 <div class="msg" id="loginMsg"></div>
-<div class="toggle">No tienes cuenta? <span id="toCreate">Crear PIN</span></div>
+<div class="toggle">¿No tienes cuenta? <span id="toCreate">Crear PIN</span></div>
 </div>
+
 <div class="box hidden" id="createBox">
 <div class="pin-title" id="createTitle">Crear PIN</div>
-<div class="pin-sub" id="createSub">Escoge un PIN de 4 digitos</div>
+<div class="pin-sub" id="createSub">Escoge un PIN de 4 dígitos</div>
 <div class="dots"><div class="dot" id="c1"></div><div class="dot" id="c2"></div><div class="dot" id="c3"></div><div class="dot" id="c4"></div></div>
 <div class="keypad" id="createPad"></div>
 <div class="msg" id="createMsg"></div>
-<div class="toggle">Ya tienes PIN? <span id="toLogin">Entrar</span></div>
+<div class="toggle">¿Ya tienes PIN? <span id="toLogin">Entrar</span></div>
 </div>
+
 <div class="box hidden" id="dashBox">
-<div class="welcome"><h3>Bienvenido!</h3><p>Encuentra las parejas</p></div>
+<div class="welcome"><h3>¡Bienvenido!</h3><p>Encuentra las parejas</p></div>
 <div class="stats"><div class="stat"><b id="dGames">0</b><span>Juegos</span></div><div class="stat"><b id="dBest">--</b><span>Mejor</span></div><div class="stat"><b id="dAvg">--</b><span>Promedio</span></div><div class="stat"><b id="dRate">--</b><span>Nivel</span></div></div>
 <button class="btn" id="startBtn">Comenzar</button>
 <button class="btn btn2" id="logoutBtn">Salir</button>
 </div>
+
 <div class="box hidden" id="gameBox">
 <div class="game-info"><div class="game-stat"><b id="gMoves">0</b><span>Movidas</span></div><div class="game-stat"><b id="gPairs">0/8</b><span>Parejas</span></div><div class="game-stat"><b id="gTime">0:00</b><span>Tiempo</span></div></div>
 <div class="grid-container"><div class="match-grid" id="matchGrid"></div></div>
 <button class="btn btn2" id="quitBtn">Salir</button>
 </div>
+
 <div class="res-bg hidden" id="resBg">
 <div class="res">
-<h2>Completado!</h2>
+<h2>¡Completado!</h2>
 <div class="res-score" id="resMoves">0</div>
 <div class="res-label">Movidas</div>
 <div class="res-details"><div class="res-detail"><b id="resTime">0:00</b><span>Tiempo</span></div><div class="res-detail"><b id="resPairs">8</b><span>Parejas</span></div></div>
-<div class="record hidden" id="resRecord">Nuevo Record!</div>
+<div class="record hidden" id="resRecord">¡Nuevo Récord!</div>
 <div class="rating" id="resRating">Nivel: --</div>
 <button class="btn" id="againBtn">Jugar Otra Vez</button>
-<button class="btn btn2" id="menuBtn">Menu</button>
+<button class="btn btn2" id="menuBtn">Menú</button>
 </div>
 </div>
+
 <div class="popup-bg hidden" id="limitPopup">
 <div class="popup">
-<h3 id="limitTitle">Limite diario alcanzado</h3>
+<h3 id="limitTitle">Límite diario alcanzado</h3>
 <p id="limitMsg">Usaste tus 3 juegos gratis hoy</p>
 <a href="https://hooporiapr-oss.github.io/akashic-works/">Volver al Inicio</a>
 <button id="upgradeBtn">Desbloquear Ilimitado</button>
 </div>
 </div>
+
 <script>
 (function(){
-var PK="mmpr1_pin",SK="mmpr1_stats_",DK="mmpr1_device",MAX_DAILY=3,MAX_DAYS=3;
-var currentPin="",moves=0,pairs=0,firstCard=null,secondCard=null,canFlip=true,timerInt=null,seconds=0;
-var ICONS=["🌟","🎯","🔥","💎","🎨","🎭","🎪","🎢","🌈","🦋","🌸","🍀"];
-var cards=[];
-function $(id){return document.getElementById(id);}
-function getDeviceId(){var id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem(DK,id);}return id;}
-function getToday(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
-function getDeviceTries(){var key=DK+"_tries";try{var t=JSON.parse(localStorage.getItem(key));if(t&&t.startDate)return t;}catch(e){}return{n:0,d:getToday(),startDate:getToday(),daysUsed:[]};}
-function setDeviceTries(t){localStorage.setItem(DK+"_tries",JSON.stringify(t));}
-function getDaysDiff(startDate){var start=new Date(startDate);var now=new Date();return Math.floor((now-start)/(1000*60*60*24));}
-function canPlay(){var t=getDeviceTries(),today=getToday();var daysSinceStart=getDaysDiff(t.startDate);if(daysSinceStart>=MAX_DAYS)return{ok:false,left:0,expired:true,daysLeft:0};if(t.d!==today){t.n=0;t.d=today;if(t.daysUsed.indexOf(today)===-1)t.daysUsed.push(today);setDeviceTries(t);}return{ok:t.n<MAX_DAILY,left:MAX_DAILY-t.n,expired:false,daysLeft:MAX_DAYS-daysSinceStart};}
-function useTry(){var t=getDeviceTries(),today=getToday();if(t.d!==today){t.n=0;t.d=today;if(t.daysUsed.indexOf(today)===-1)t.daysUsed.push(today);}t.n++;setDeviceTries(t);showBanner();}
-function hash(p){var h=0,s=p+"mmpr1";for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h&=h;}return h.toString(36);}
-function getPins(){try{return JSON.parse(localStorage.getItem(PK))||{};}catch(e){return{};}}
-function savePins(p){localStorage.setItem(PK,JSON.stringify(p));}
-function checkPin(p){return!!getPins()[hash(p)];}
-function savePin(p){var pins=getPins();pins[hash(p)]={created:Date.now()};savePins(pins);}
-function getStats(){try{return JSON.parse(localStorage.getItem(SK+hash(currentPin)))||{games:0,bestMoves:0,totalMoves:0};}catch(e){return{games:0,bestMoves:0,totalMoves:0};}}
-function setStats(s){localStorage.setItem(SK+hash(currentPin),JSON.stringify(s));}
-function showBanner(){var c=canPlay();$("bannerEl").textContent=c.expired?"Prueba terminada":c.left+"/"+MAX_DAILY+" (Dia "+c.daysLeft+")";}
-function showLimit(){var c=canPlay();$("limitTitle").textContent=c.expired?"Prueba gratis terminada":"Limite diario alcanzado";$("limitMsg").textContent=c.expired?"Tu prueba gratis de 3 dias ha expirado":"Usaste "+MAX_DAILY+" juegos gratis hoy. "+c.daysLeft+" dia(s) restantes.";$("limitPopup").classList.remove("hidden");}
-function show(id){["loginBox","createBox","dashBox","gameBox"].forEach(function(x){$(x).classList.add("hidden");});$(id).classList.remove("hidden");}
-function setDots(pre,n){for(var i=1;i<=4;i++){var el=$(pre+i);if(el){if(i<=n)el.classList.add("on");else el.classList.remove("on");}}}
-function setMsg(id,t,isErr){var m=$(id);m.textContent=t;m.className="msg "+(isErr?"err":"ok");}
-function getRating(mv){if(!mv||mv<1)return"--";if(mv<=16)return"Genio";if(mv<=20)return"Experto";if(mv<=26)return"Excelente";if(mv<=32)return"Bueno";return"Aprendiz";}
-function formatTime(s){return Math.floor(s/60)+":"+(s%60<10?"0":"")+s%60;}
-var loginPin="",createPin="",confirmPin="",isConfirming=false;
-function buildKeypad(cid,onDigit,onDel){var c=$(cid);c.innerHTML="";for(var i=1;i<=9;i++){(function(d){var b=document.createElement("button");b.className="key";b.textContent=d;b.onclick=function(){onDigit(d);};c.appendChild(b);})(i);}var e=document.createElement("button");e.className="key empty";c.appendChild(e);var z=document.createElement("button");z.className="key";z.textContent="0";z.onclick=function(){onDigit(0);};c.appendChild(z);var del=document.createElement("button");del.className="key";del.textContent="<";del.onclick=onDel;c.appendChild(del);}
-function setupLogin(){buildKeypad("loginPad",function(d){if(loginPin.length<4){loginPin+=d;setDots("d",loginPin.length);if(loginPin.length===4){setTimeout(function(){if(checkPin(loginPin)){currentPin=loginPin;loadDash();}else{setMsg("loginMsg","PIN incorrecto",true);loginPin="";setDots("d",0);}},200);}}},function(){if(loginPin.length>0){loginPin=loginPin.slice(0,-1);setDots("d",loginPin.length);$("loginMsg").textContent="";}});}
-function setupCreate(){buildKeypad("createPad",function(d){if(confirmPin.length<4){confirmPin+=d;setDots("c",confirmPin.length);if(confirmPin.length===4){setTimeout(function(){if(!isConfirming){createPin=confirmPin;confirmPin="";isConfirming=true;$("createTitle").textContent="Confirmar PIN";$("createSub").textContent="Escribe el PIN otra vez";setDots("c",0);}else{if(confirmPin===createPin){savePin(createPin);currentPin=createPin;setMsg("createMsg","PIN creado!",false);setTimeout(loadDash,500);}else{setMsg("createMsg","PINs no coinciden",true);createPin="";confirmPin="";isConfirming=false;$("createTitle").textContent="Crear PIN";$("createSub").textContent="Escoge un PIN de 4 digitos";setDots("c",0);}}},200);}}},function(){if(confirmPin.length>0){confirmPin=confirmPin.slice(0,-1);setDots("c",confirmPin.length);$("createMsg").textContent="";}});}
-function loadDash(){var s=getStats();$("dGames").textContent=s.games||0;$("dBest").textContent=s.bestMoves||"--";$("dAvg").textContent=s.games>0?Math.round(s.totalMoves/s.games):"--";$("dRate").textContent=getRating(s.bestMoves);show("dashBox");showBanner();if(!canPlay().ok)showLimit();}
-function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t;}return arr;}
-function buildGrid(){var g=$("matchGrid");g.innerHTML="";g.style.gridTemplateColumns="repeat(4,1fr)";var icons=ICONS.slice(0,8);cards=shuffle(icons.concat(icons).map(function(ic,i){return{id:i,icon:ic,matched:false};}));cards.forEach(function(card,idx){var cell=document.createElement("div");cell.className="match-cell";cell.dataset.idx=idx;cell.textContent="";cell.onclick=function(){flipCard(idx);};g.appendChild(cell);});}
-function flipCard(idx){if(!canFlip||cards[idx].matched)return;var cells=$("matchGrid").children;var cell=cells[idx];if(cell.classList.contains("flipped"))return;cell.classList.add("flipped");cell.textContent=cards[idx].icon;if(!firstCard){firstCard={idx:idx,icon:cards[idx].icon};}else if(firstCard.idx!==idx){secondCard={idx:idx,icon:cards[idx].icon};moves++;$("gMoves").textContent=moves;canFlip=false;if(firstCard.icon===secondCard.icon){cards[firstCard.idx].matched=true;cards[secondCard.idx].matched=true;cells[firstCard.idx].classList.add("matched");cells[secondCard.idx].classList.add("matched");pairs++;$("gPairs").textContent=pairs+"/8";firstCard=null;secondCard=null;canFlip=true;if(pairs===8)endGame();}else{setTimeout(function(){cells[firstCard.idx].classList.remove("flipped");cells[firstCard.idx].textContent="";cells[secondCard.idx].classList.remove("flipped");cells[secondCard.idx].textContent="";firstCard=null;secondCard=null;canFlip=true;},800);}}}
-function startTimer(){seconds=0;$("gTime").textContent="0:00";if(timerInt)clearInterval(timerInt);timerInt=setInterval(function(){seconds++;$("gTime").textContent=formatTime(seconds);},1000);}
-function startGame(){if(!canPlay().ok){showLimit();return;}moves=0;pairs=0;firstCard=null;secondCard=null;canFlip=true;$("gMoves").textContent="0";$("gPairs").textContent="0/8";buildGrid();show("gameBox");startTimer();}
-function endGame(){if(timerInt)clearInterval(timerInt);var s=getStats();s.games++;s.totalMoves+=moves;var isRec=!s.bestMoves||moves<s.bestMoves;if(isRec)s.bestMoves=moves;setStats(s);useTry();$("resMoves").textContent=moves;$("resTime").textContent=formatTime(seconds);$("resPairs").textContent="8";$("resRating").textContent="Nivel: "+getRating(moves);if(isRec){$("resRecord").classList.remove("hidden");}else{$("resRecord").classList.add("hidden");}$("resBg").classList.remove("hidden");if(!canPlay().ok)setTimeout(showLimit,1500);}
-document.addEventListener("DOMContentLoaded",function(){getDeviceId();setupLogin();setupCreate();$("toCreate").onclick=function(){createPin="";confirmPin="";isConfirming=false;$("createTitle").textContent="Crear PIN";$("createSub").textContent="Escoge un PIN de 4 digitos";setDots("c",0);$("createMsg").textContent="";show("createBox");};$("toLogin").onclick=function(){loginPin="";setDots("d",0);$("loginMsg").textContent="";show("loginBox");};$("startBtn").onclick=function(){if(!canPlay().ok){showLimit();return;}startGame();};$("logoutBtn").onclick=function(){loginPin="";currentPin="";setDots("d",0);show("loginBox");};$("quitBtn").onclick=function(){if(timerInt)clearInterval(timerInt);loadDash();};$("againBtn").onclick=function(){$("resBg").classList.add("hidden");if(!canPlay().ok){showLimit();return;}startGame();};$("menuBtn").onclick=function(){$("resBg").classList.add("hidden");loadDash();};$("upgradeBtn").onclick=function(){location.href="mailto:support@akashic.works?subject=Pro%20Upgrade";};show("loginBox");showBanner();});
+    var PK = "mmpr2_pin";
+    var SK = "mmpr2_stats_";
+    var DK = "mmpr2_device";
+    var MAX_DAILY = 3;
+    var MAX_DAYS = 3;
+    
+    var currentPin = "";
+    var moves = 0;
+    var pairs = 0;
+    var firstCard = null;
+    var secondCard = null;
+    var canFlip = true;
+    var timerInt = null;
+    var seconds = 0;
+    var cards = [];
+    
+    var ICONS = ["🌟","🎯","🔥","💎","🎨","🎭","🎪","🎢","🌈","🦋","🌸","🍀"];
+    
+    function $(id) {
+        return document.getElementById(id);
+    }
+    
+    function getDeviceId() {
+        var id = localStorage.getItem(DK);
+        if (!id) {
+            id = "dev_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem(DK, id);
+        }
+        return id;
+    }
+    
+    function getToday() {
+        var d = new Date();
+        return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    }
+    
+    function getDeviceTries() {
+        var key = DK + "_tries";
+        try {
+            var t = JSON.parse(localStorage.getItem(key));
+            if (t && t.startDate) return t;
+        } catch (e) {}
+        return { n: 0, d: getToday(), startDate: getToday() };
+    }
+    
+    function setDeviceTries(t) {
+        localStorage.setItem(DK + "_tries", JSON.stringify(t));
+    }
+    
+    function getDaysDiff(startDate) {
+        var start = new Date(startDate);
+        var now = new Date();
+        return Math.floor((now - start) / (1000 * 60 * 60 * 24));
+    }
+    
+    function canPlay() {
+        var t = getDeviceTries();
+        var today = getToday();
+        var daysSinceStart = getDaysDiff(t.startDate);
+        
+        if (daysSinceStart >= MAX_DAYS) {
+            return { ok: false, left: 0, expired: true, daysLeft: 0 };
+        }
+        
+        if (t.d !== today) {
+            t.n = 0;
+            t.d = today;
+            setDeviceTries(t);
+        }
+        
+        return {
+            ok: t.n < MAX_DAILY,
+            left: MAX_DAILY - t.n,
+            expired: false,
+            daysLeft: MAX_DAYS - daysSinceStart
+        };
+    }
+    
+    function useTry() {
+        var t = getDeviceTries();
+        var today = getToday();
+        if (t.d !== today) {
+            t.n = 0;
+            t.d = today;
+        }
+        t.n++;
+        setDeviceTries(t);
+        showBanner();
+    }
+    
+    function hash(p) {
+        var h = 0;
+        var s = p + "mmpr2";
+        for (var i = 0; i < s.length; i++) {
+            h = ((h << 5) - h) + s.charCodeAt(i);
+            h = h & h;
+        }
+        return h.toString(36);
+    }
+    
+    function getPins() {
+        try {
+            return JSON.parse(localStorage.getItem(PK)) || {};
+        } catch (e) {
+            return {};
+        }
+    }
+    
+    function savePins(p) {
+        localStorage.setItem(PK, JSON.stringify(p));
+    }
+    
+    function checkPin(p) {
+        return !!getPins()[hash(p)];
+    }
+    
+    function savePin(p) {
+        var pins = getPins();
+        pins[hash(p)] = { created: Date.now() };
+        savePins(pins);
+    }
+    
+    function getStats() {
+        try {
+            return JSON.parse(localStorage.getItem(SK + hash(currentPin))) || { games: 0, bestMoves: 0, totalMoves: 0 };
+        } catch (e) {
+            return { games: 0, bestMoves: 0, totalMoves: 0 };
+        }
+    }
+    
+    function setStats(s) {
+        localStorage.setItem(SK + hash(currentPin), JSON.stringify(s));
+    }
+    
+    function showBanner() {
+        var c = canPlay();
+        if (c.expired) {
+            $("bannerEl").textContent = "Prueba terminada";
+        } else {
+            $("bannerEl").textContent = c.left + "/" + MAX_DAILY + " (Día " + c.daysLeft + ")";
+        }
+    }
+    
+    function showLimit() {
+        var c = canPlay();
+        if (c.expired) {
+            $("limitTitle").textContent = "Prueba gratis terminada";
+            $("limitMsg").textContent = "Tu prueba gratis de 3 días ha expirado";
+        } else {
+            $("limitTitle").textContent = "Límite diario alcanzado";
+            $("limitMsg").textContent = "Usaste " + MAX_DAILY + " juegos gratis hoy. " + c.daysLeft + " día(s) restantes.";
+        }
+        $("limitPopup").classList.remove("hidden");
+    }
+    
+    function show(id) {
+        ["loginBox", "createBox", "dashBox", "gameBox"].forEach(function(x) {
+            $(x).classList.add("hidden");
+        });
+        $(id).classList.remove("hidden");
+    }
+    
+    function setDots(pre, n) {
+        for (var i = 1; i <= 4; i++) {
+            var el = $(pre + i);
+            if (el) {
+                if (i <= n) {
+                    el.classList.add("on");
+                } else {
+                    el.classList.remove("on");
+                }
+            }
+        }
+    }
+    
+    function setMsg(id, t, isErr) {
+        var m = $(id);
+        m.textContent = t;
+        m.className = "msg " + (isErr ? "err" : "ok");
+    }
+    
+    function getRating(mv) {
+        if (!mv || mv < 1) return "--";
+        if (mv <= 16) return "Genio";
+        if (mv <= 20) return "Experto";
+        if (mv <= 26) return "Excelente";
+        if (mv <= 32) return "Bueno";
+        return "Aprendiz";
+    }
+    
+    function formatTime(s) {
+        return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60);
+    }
+    
+    var loginPin = "";
+    var createPin = "";
+    var confirmPin = "";
+    var isConfirming = false;
+    
+    function buildKeypad(containerId, onDigit, onDelete) {
+        var container = $(containerId);
+        container.innerHTML = "";
+        
+        for (var i = 1; i <= 9; i++) {
+            (function(digit) {
+                var btn = document.createElement("button");
+                btn.className = "key";
+                btn.textContent = digit;
+                btn.onclick = function() { onDigit(digit); };
+                container.appendChild(btn);
+            })(i);
+        }
+        
+        var empty = document.createElement("button");
+        empty.className = "key empty";
+        container.appendChild(empty);
+        
+        var zero = document.createElement("button");
+        zero.className = "key";
+        zero.textContent = "0";
+        zero.onclick = function() { onDigit(0); };
+        container.appendChild(zero);
+        
+        var del = document.createElement("button");
+        del.className = "key";
+        del.textContent = "←";
+        del.onclick = onDelete;
+        container.appendChild(del);
+    }
+    
+    function setupLogin() {
+        buildKeypad("loginPad", function(digit) {
+            if (loginPin.length < 4) {
+                loginPin += digit;
+                setDots("d", loginPin.length);
+                if (loginPin.length === 4) {
+                    setTimeout(function() {
+                        if (checkPin(loginPin)) {
+                            currentPin = loginPin;
+                            loadDash();
+                        } else {
+                            setMsg("loginMsg", "PIN incorrecto", true);
+                            loginPin = "";
+                            setDots("d", 0);
+                        }
+                    }, 200);
+                }
+            }
+        }, function() {
+            if (loginPin.length > 0) {
+                loginPin = loginPin.slice(0, -1);
+                setDots("d", loginPin.length);
+                $("loginMsg").textContent = "";
+            }
+        });
+    }
+    
+    function setupCreate() {
+        buildKeypad("createPad", function(digit) {
+            if (confirmPin.length < 4) {
+                confirmPin += digit;
+                setDots("c", confirmPin.length);
+                if (confirmPin.length === 4) {
+                    setTimeout(function() {
+                        if (!isConfirming) {
+                            createPin = confirmPin;
+                            confirmPin = "";
+                            isConfirming = true;
+                            $("createTitle").textContent = "Confirmar PIN";
+                            $("createSub").textContent = "Escribe el PIN otra vez";
+                            setDots("c", 0);
+                        } else {
+                            if (confirmPin === createPin) {
+                                savePin(createPin);
+                                currentPin = createPin;
+                                setMsg("createMsg", "¡PIN creado!", false);
+                                setTimeout(loadDash, 500);
+                            } else {
+                                setMsg("createMsg", "PINs no coinciden", true);
+                                createPin = "";
+                                confirmPin = "";
+                                isConfirming = false;
+                                $("createTitle").textContent = "Crear PIN";
+                                $("createSub").textContent = "Escoge un PIN de 4 dígitos";
+                                setDots("c", 0);
+                            }
+                        }
+                    }, 200);
+                }
+            }
+        }, function() {
+            if (confirmPin.length > 0) {
+                confirmPin = confirmPin.slice(0, -1);
+                setDots("c", confirmPin.length);
+                $("createMsg").textContent = "";
+            }
+        });
+    }
+    
+    function loadDash() {
+        var s = getStats();
+        $("dGames").textContent = s.games || 0;
+        $("dBest").textContent = s.bestMoves || "--";
+        $("dAvg").textContent = s.games > 0 ? Math.round(s.totalMoves / s.games) : "--";
+        $("dRate").textContent = getRating(s.bestMoves);
+        show("dashBox");
+        showBanner();
+        if (!canPlay().ok) showLimit();
+    }
+    
+    function shuffle(arr) {
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+        return arr;
+    }
+    
+    function buildGrid() {
+        var grid = $("matchGrid");
+        grid.innerHTML = "";
+        grid.style.gridTemplateColumns = "repeat(4, 1fr)";
+        
+        var icons = ICONS.slice(0, 8);
+        var doubled = icons.concat(icons);
+        cards = shuffle(doubled.map(function(icon, idx) {
+            return { id: idx, icon: icon, matched: false };
+        }));
+        
+        cards.forEach(function(card, idx) {
+            var cell = document.createElement("div");
+            cell.className = "match-cell";
+            cell.dataset.idx = idx;
+            cell.textContent = "";
+            cell.onclick = function() { flipCard(idx); };
+            grid.appendChild(cell);
+        });
+    }
+    
+    function flipCard(idx) {
+        if (!canFlip || cards[idx].matched) return;
+        
+        var cells = $("matchGrid").children;
+        var cell = cells[idx];
+        
+        if (cell.classList.contains("flipped")) return;
+        
+        cell.classList.add("flipped");
+        cell.textContent = cards[idx].icon;
+        
+        if (!firstCard) {
+            firstCard = { idx: idx, icon: cards[idx].icon };
+        } else if (firstCard.idx !== idx) {
+            secondCard = { idx: idx, icon: cards[idx].icon };
+            moves++;
+            $("gMoves").textContent = moves;
+            canFlip = false;
+            
+            if (firstCard.icon === secondCard.icon) {
+                cards[firstCard.idx].matched = true;
+                cards[secondCard.idx].matched = true;
+                cells[firstCard.idx].classList.add("matched");
+                cells[secondCard.idx].classList.add("matched");
+                pairs++;
+                $("gPairs").textContent = pairs + "/8";
+                firstCard = null;
+                secondCard = null;
+                canFlip = true;
+                if (pairs === 8) endGame();
+            } else {
+                setTimeout(function() {
+                    cells[firstCard.idx].classList.remove("flipped");
+                    cells[firstCard.idx].textContent = "";
+                    cells[secondCard.idx].classList.remove("flipped");
+                    cells[secondCard.idx].textContent = "";
+                    firstCard = null;
+                    secondCard = null;
+                    canFlip = true;
+                }, 800);
+            }
+        }
+    }
+    
+    function startTimer() {
+        seconds = 0;
+        $("gTime").textContent = "0:00";
+        if (timerInt) clearInterval(timerInt);
+        timerInt = setInterval(function() {
+            seconds++;
+            $("gTime").textContent = formatTime(seconds);
+        }, 1000);
+    }
+    
+    function startGame() {
+        if (!canPlay().ok) {
+            showLimit();
+            return;
+        }
+        moves = 0;
+        pairs = 0;
+        firstCard = null;
+        secondCard = null;
+        canFlip = true;
+        $("gMoves").textContent = "0";
+        $("gPairs").textContent = "0/8";
+        buildGrid();
+        show("gameBox");
+        startTimer();
+    }
+    
+    function endGame() {
+        if (timerInt) clearInterval(timerInt);
+        
+        var s = getStats();
+        s.games++;
+        s.totalMoves += moves;
+        var isRecord = !s.bestMoves || moves < s.bestMoves;
+        if (isRecord) s.bestMoves = moves;
+        setStats(s);
+        
+        useTry();
+        
+        $("resMoves").textContent = moves;
+        $("resTime").textContent = formatTime(seconds);
+        $("resPairs").textContent = "8";
+        $("resRating").textContent = "Nivel: " + getRating(moves);
+        
+        if (isRecord) {
+            $("resRecord").classList.remove("hidden");
+        } else {
+            $("resRecord").classList.add("hidden");
+        }
+        
+        $("resBg").classList.remove("hidden");
+        
+        if (!canPlay().ok) {
+            setTimeout(showLimit, 1500);
+        }
+    }
+    
+    // Initialize on DOM ready
+    document.addEventListener("DOMContentLoaded", function() {
+        getDeviceId();
+        setupLogin();
+        setupCreate();
+        
+        $("toCreate").onclick = function() {
+            createPin = "";
+            confirmPin = "";
+            isConfirming = false;
+            $("createTitle").textContent = "Crear PIN";
+            $("createSub").textContent = "Escoge un PIN de 4 dígitos";
+            setDots("c", 0);
+            $("createMsg").textContent = "";
+            show("createBox");
+        };
+        
+        $("toLogin").onclick = function() {
+            loginPin = "";
+            setDots("d", 0);
+            $("loginMsg").textContent = "";
+            show("loginBox");
+        };
+        
+        $("startBtn").onclick = function() {
+            if (!canPlay().ok) {
+                showLimit();
+                return;
+            }
+            startGame();
+        };
+        
+        $("logoutBtn").onclick = function() {
+            loginPin = "";
+            currentPin = "";
+            setDots("d", 0);
+            show("loginBox");
+        };
+        
+        $("quitBtn").onclick = function() {
+            if (timerInt) clearInterval(timerInt);
+            loadDash();
+        };
+        
+        $("againBtn").onclick = function() {
+            $("resBg").classList.add("hidden");
+            if (!canPlay().ok) {
+                showLimit();
+                return;
+            }
+            startGame();
+        };
+        
+        $("menuBtn").onclick = function() {
+            $("resBg").classList.add("hidden");
+            loadDash();
+        };
+        
+        $("upgradeBtn").onclick = function() {
+            window.location.href = "mailto:support@akashic.works?subject=Pro%20Upgrade";
+        };
+        
+        // Show login page on load
+        show("loginBox");
+        showBanner();
+    });
 })();
 </script>
 </body>
